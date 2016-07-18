@@ -21,7 +21,7 @@ module.exports = function (pkg, data) {
 			var url = get(req.params.id);
 			if (url) {
 				// TODO append to log
-				// TODO set cache header
+				res.setHeader("Cache-Control", "public, max-age=" + 24 * 60 * 60 * 1000);
 				res.redirect(301, url.target);
 			} else {
 				next();
