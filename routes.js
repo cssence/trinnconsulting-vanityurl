@@ -1,8 +1,7 @@
-var remote = require("./remote.js");
+var path = require("path");
 
 module.exports = function (pkg, data) {
 	"use strict";
-	var defaults = {HOME: "200", NOT_FOUND: "404"};
 	var get = function (id) {
 		var url = data[id];
 		if (url) {
@@ -18,24 +17,27 @@ module.exports = function (pkg, data) {
 			console.info(req.method, req.path);
 			next();
 		},
-		forward: function (req, res) {
-			var url = get(req.params.id || defaults.HOME); // || get(defaults.NOT_FOUND);
+		forward: function (req, res, next) {
+			var url = get(req.params.id);
 			if (url) {
 				// TODO append to log
+				// TODO set cache header
 				res.redirect(301, url.target);
 			} else {
-				url = get(defaults.NOT_FOUND);
-				if (url) {
-					remote(url.target, function (err, data) {
-						res.status(404).send(err ? undefined : data);
-					});
-				} else {
-					res.status(404).send();
-				}
+				next();
 			}
 		},
-		error: function (req, res) {
-			res.status(404).send();
+		error: function (req, res, next) {
+		  res.status(404);
+			if (req.accepts("html")) {
+				res.sendFile(path.join(__dirname, "public", "404.html")); 
+				return;
+			}
+			if (req.accepts("json")) {
+				res.send({error: "Not found"});
+				return;
+			}
+			res.type("txt").send("Not found");
 		}
 	};
 };

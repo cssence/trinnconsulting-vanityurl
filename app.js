@@ -26,7 +26,8 @@ fs.access(pkg.config.data, fs.R_OK | fs.W_OK, function (err) {
 	}
 
 	// Initialization
-	var app = require("express")();
+	var express = require("express");
+	var app = express();
 	app.set("port", pkg.config.port);
 	app.locals.basedir = path.join(__dirname, "views");
 	app.set("views", path.join(__dirname, "views"));
@@ -35,8 +36,8 @@ fs.access(pkg.config.data, fs.R_OK | fs.W_OK, function (err) {
 	// Routes
 	var routes = require(path.join(__dirname, "routes.js"))(pkg, data);
 	app.all("*", routes.log);
+	app.use(express.static(path.join(__dirname, "public")));
 	app.get("/:id", routes.forward);
-	app.get("/", routes.forward);
 	app.use(routes.error);
 
 	// Http server
