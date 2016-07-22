@@ -29,9 +29,6 @@ fs.access(pkg.config.data, fs.R_OK | fs.W_OK, function (err) {
 	var express = require("express");
 	var app = express();
 	app.set("port", pkg.config.port);
-	app.locals.basedir = path.join(__dirname, "views");
-	app.set("views", path.join(__dirname, "views"));
-	app.set("view engine", "jade");
 
 	// Routes
 	var routes = require(path.join(__dirname, "routes.js"))(pkg, data);
