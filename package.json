@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "homepage": "https://github.com/TrinnConsulting/vanityurl#readme",
   "license": "CC-BY-4.0",
-  "description": "Node-based URL Shortener",
+  "description": "Node-based URL forwarding service",
   "main": "app.js",
   "config": {
     "port": 8301

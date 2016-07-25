@@ -4,7 +4,7 @@ A stateless URL forwarding service.
 
 ## Database
 
-Links are currently not stored in any database. Details below.
+Links are not stored in any database. Details below.
 
 ## Startup
 
@@ -43,7 +43,7 @@ If only the content of the already specified remote JSON file changes, there is 
 
 You will see the __sha-1__ in the log on startup. Triggering this URL will result in a 404, but the reload does take place in the background. For confirmation, you can reveal a list of the current configuration using the following URL.
 
-[http://my-short-doma.in/{sha-1 of DATA_URL}/urls)](#)
+[http://my-short-doma.in/{sha-1 of DATA_URL}/urls](#)
 
 
 ## Not implemented (yet)
