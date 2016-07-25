@@ -1,45 +1,40 @@
 /*jshint node: true */
 "use strict";
-var fs = require("fs");
 var path = require("path");
 
 // Configuration
 var pkg = require(path.join(__dirname, "package.json"));
 pkg.config = pkg.config || {};
-pkg.config.data = process.env.DATA || pkg.config.data || path.join(__dirname, "data");
-pkg.config.dataLatest = path.join(pkg.config.data, "urls.json");
 pkg.config.port = process.env.PORT || pkg.config.port || 8080;
+pkg.config.remote = process.env.DATA_URL;
+if (pkg.config.remote) {
+	pkg.config.adminAccess = require("sha1")(pkg.config.remote);
+}
+pkg.config.urls = {};
 
-fs.access(pkg.config.data, fs.R_OK | fs.W_OK, function (err) {
-	if (err) {
-		console.error(err);
-		console.error("Express server requires READ/WRITE access to %s.", pkg.config.data);
-		process.exit(1);
+// Initialization
+var express = require("express");
+var app = express();
+app.set("port", pkg.config.port);
+
+// Routes
+var routes = require(path.join(__dirname, "routes.js"))(pkg);
+app.all("*", routes.log);
+app.use(express.static(path.join(__dirname, "public")));
+if (pkg.config.adminAccess) {
+	app.get("/" + pkg.config.adminAccess, routes.refresh);
+	app.get("/" + pkg.config.adminAccess + "/:action", routes.admin);
+}
+app.get("/:id", routes.forward);
+app.use(routes.error);
+
+// Http server
+require("http").createServer(app).listen(pkg.config.port, function () {
+	console.info("Express server listening on PORT %d", pkg.config.port);
+	if (pkg.config.remote) {
+		console.info("Express server connecting to remote location identified as %s", pkg.config.adminAccess);
+		routes.refresh();
+	} else {
+		console.warn("Express server running without any (remote) data");
 	}
-	var data;
-	try {
-		data = require(pkg.config.dataLatest);
-	} catch (err) {
-		console.error(err);
-		console.error("Check your configuration. No data file found at %s.", pkg.config.dataLatest);
-		process.exit(1);
-	}
-
-	// Initialization
-	var express = require("express");
-	var app = express();
-	app.set("port", pkg.config.port);
-
-	// Routes
-	var routes = require(path.join(__dirname, "routes.js"))(pkg, data);
-	app.all("*", routes.log);
-	app.use(express.static(path.join(__dirname, "public")));
-	app.get("/:id", routes.forward);
-	app.use(routes.error);
-
-	// Http server
-	require("http").createServer(app).listen(pkg.config.port, function () {
-		console.info("[%s] Express server running, listening on PORT %d", new Date().toISOString(), pkg.config.port);
-	});
-
 });
